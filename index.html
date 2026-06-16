@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bay Church Prayer Manual — Knowledge Quiz</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+<style>
+  body {
+    background-color: #f5f2ea;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    padding-bottom: 60px;
+  }
+  .page-header {
+    border-bottom: 2px solid #8a6d3b;
+    margin-top: 25px;
+  }
+  .page-header h1 {
+    color: #5a4322;
+  }
+  .page-header small {
+    color: #777;
+  }
+  #score-corner {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1030;
+    background-color: #5a4322;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    font-size: 16px;
+    text-align: center;
+    min-width: 130px;
+  }
+  #score-corner .score-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+  #score-corner .score-value {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .panel-quiz {
+    border-color: #d9cfb8;
+  }
+  .panel-quiz > .panel-heading {
+    background-color: #ece4d3;
+    border-color: #d9cfb8;
+    color: #5a4322;
+    font-weight: bold;
+  }
+  .option-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 10px;
+    white-space: normal;
+    padding: 12px 15px;
+  }
+  .option-btn.disabled-look {
+    cursor: not-allowed;
+  }
+  #feedback-box {
+    display: none;
+    margin-top: 15px;
+    font-size: 16px;
+  }
+  #next-btn-wrap {
+    display: none;
+    margin-top: 15px;
+  }
+  #start-panel, #end-panel {
+    display: block;
+  }
+  #quiz-panel {
+    display: none;
+  }
+  .progress {
+    margin-bottom: 5px;
+  }
+  #question-counter {
+    color: #777;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .well-intro {
+    background-color: #fffdf8;
+  }
+  footer.app-footer {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div id="score-corner">
+  <span class="score-label">Score</span>
+  <span class="score-value" id="score-display">0 / 0</span>
+</div>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>The Bay Church Prayer Manual <small>Knowledge Quiz</small></h1>
+  </div>
+
+  <!-- START PANEL -->
+  <div id="start-panel">
+    <div class="well well-intro">
+      <p>This quiz covers the Bay Church Prayer Ministry training manual — Our Purpose &amp; Vision, the three
+      transformational stages, the ten Character qualities, Mandatory Requirements, Growth Track, the Application
+      &amp; Interview process, and all of the procedures for Prayer Requests, Intercessory Prayer, Counseling,
+      Altar Ministry, Anointing Oil, and After Service Prayer.</p>
+      <p>Questions are presented one at a time, in a random order, and none will repeat during a session. After you
+      answer, you'll immediately see whether you were right before moving on.</p>
+    </div>
+    <div class="form-group">
+      <label for="question-count-select">How many questions would you like?</label>
+      <select id="question-count-select" class="form-control" style="max-width:260px;">
+        <option value="all">All questions</option>
+        <option value="25">25 questions</option>
+        <option value="50">50 questions</option>
+        <option value="100">100 questions</option>
+      </select>
+    </div>
+    <button id="start-btn" class="btn btn-primary btn-lg">Start Quiz</button>
+  </div>
+
+  <!-- QUIZ PANEL -->
+  <div id="quiz-panel">
+    <div id="question-counter"></div>
+    <div class="progress">
+      <div id="progress-bar" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%;"></div>
+    </div>
+
+    <div class="panel panel-default panel-quiz">
+      <div class="panel-heading">Question</div>
+      <div class="panel-body">
+        <h4 id="question-text"></h4>
+        <div id="options-area"></div>
+
+        <div id="feedback-box" class="alert" role="alert"></div>
+
+        <div id="next-btn-wrap">
+          <button id="next-btn" class="btn btn-default">Next Question &raquo;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- END PANEL -->
+  <div id="end-panel" style="display:none;">
+    <div class="panel panel-success">
+      <div class="panel-heading"><strong>Quiz Complete!</strong></div>
+      <div class="panel-body text-center">
+        <h2 id="final-score-text"></h2>
+        <p id="final-message" class="lead"></p>
+        <button id="restart-btn" class="btn btn-primary btn-lg">Take the Quiz Again</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>The Bay Church Prayer Manual Knowledge Quiz</p>
+  </footer>
+
+</div>
+
+<script>
+const QUESTIONS = [
+{q:"According to the manual, what does Ephesians 6:18 instruct believers to do 'on all occasions'?", o:["Fast and give generously","Pray in the Spirit with all kinds of prayers and requests","Sing psalms and hymns","Read Scripture aloud"], a:1},
+{q:"According to 1 Timothy 2:1, what four things should be made 'for all people'?", o:["Praise, worship, fasting, and giving","Petitions, prayers, intercession, and thanksgiving","Confession, repentance, baptism, and communion","Singing, dancing, shouting, and declaring"], a:1},
+{q:"In Luke 11:1-4, who asked Jesus to teach them how to pray?", o:["A Pharisee","A Roman centurion","One of His disciples","A crowd of strangers"], a:2},
+{q:"According to the disciple's request in Luke 11, whose disciples had already been taught how to pray?", o:["Moses'","Elijah's","John the Baptist's","Peter's"], a:2},
+{q:"In the model prayer from Luke 11, what are believers taught to ask God to give 'each day'?", o:["Wisdom","Strength","Our daily bread","Peace"], a:2},
+{q:"According to the model prayer in Luke 11, forgiveness from God is connected to which of our own actions?", o:["Forgiving everyone who is indebted to us","Tithing faithfully","Attending church weekly","Fasting regularly"], a:0},
+{q:"What is identified as the first purpose-driven practice modeled by Jesus in the 'Our Purpose' section?", o:["Healing the sick","Teaching others how to pray","Casting out demons","Feeding the multitude"], a:1},
+{q:"Besides teaching others to pray, what other purpose is listed for why the prayer ministry exists?", o:["To raise funds for missions","To pray for others","To plan church events","To train worship leaders"], a:1},
+{q:"What is the stated vision of The Bay Church Prayer Ministry?", o:["To raise the most prayer requests annually","To see every believer who has begun their journey with Jesus grow and mature through a life shaped by prayer","To build the largest prayer team in the region","To finish reading the Bible in a year"], a:1},
+{q:"According to the manual, prayer is described as more than an activity - it is also described as what?", o:["A discipline","A formation","A duty","A tradition"], a:1},
+{q:"Formation through prayer is said to clarify what, strengthen faith, and cultivate intimacy with God?", o:["Identity","Doctrine","Schedule","Leadership"], a:0},
+{q:"How many transformational stages does the prayer ministry desire to see every believer move through?", o:["Two","Three","Four","Five"], a:1},
+{q:"Put the three transformational stages in the order listed in the manual.", o:["Becoming Intentional, Affirming Identity, Developing Intimacy","Affirming Identity, Becoming Intentional, Developing Intimacy","Developing Intimacy, Affirming Identity, Becoming Intentional","Affirming Identity, Developing Intimacy, Becoming Intentional"], a:1},
+{q:"Which transformational stage is listed first?", o:["Developing Intimacy","Becoming Intentional","Affirming Identity","Living Above Reproach"], a:2},
+{q:"Which transformational stage is listed last?", o:["Affirming Identity","Becoming Intentional","Developing Intimacy","Teamwork"], a:2},
+{q:"According to the manual, what must happen before someone is taught how to pray?", o:["They must memorize Scripture","They must understand who they are when they pray","They must complete the Growth Track","They must shadow a prayer minister"], a:1},
+{q:"According to the manual, every believer's prayer life begins with what?", o:["Repentance","Identity","Fasting","Confession"], a:1},
+{q:"Romans 3:23, cited under 'Affirming Identity,' teaches that all have sinned and fall short of the glory of God, and are justified freely by what?", o:["His grace","Their works","Their faith alone, without grace","The Law"], a:0},
+{q:"Through Jesus Christ, believers are described as forgiven sinners saved by grace through faith and explicitly NOT by what?", o:["Prayer","Works","Baptism","Confession"], a:1},
+{q:"Besides being forgiven sinners, what else does the manual say believers have been declared?", o:["Apostles","Prophets","Righteous","Perfect"], a:2},
+{q:"According to the 'Affirming Identity' section, believers now have access to whom?", o:["The Holy Spirit only","Angels","The Father","Church leadership"], a:2},
+{q:"What does the manual say believers are in relation to God, eternally?", o:["Eternally tested","Eternally connected","Eternally separated","Eternally silent"], a:1},
+{q:"When identity is secure, what does the manual say is developed?", o:["Performance","Confidence in Christ","Pride","Independence"], a:1},
+{q:"The manual contrasts confidence in Christ with what?", o:["Humility","Performance","Faith","Grace"], a:1},
+{q:"According to 'Identity in Expression,' who has created diversity in how people connect with Him?", o:["The Church","God","The prayer team leadership","Tradition"], a:1},
+{q:"Which of the following is NOT listed as a way people are described as praying in 'Identity in Expression'?", o:["Expressively and passionately","Quietly and contemplatively","Publicly","Only in groups"], a:3},
+{q:"According to the manual, all diverse prayer gifts are welcomed in the Kingdom of God and also welcomed where?", o:["Only at the altar","On the team","In private settings only","In small groups only"], a:1},
+{q:"Which of the following is listed as part of a leader's role regarding individuals' prayer gifts?", o:["Helping individuals discover their prayer personality","Assigning the same prayer style to everyone","Discouraging public prayer","Limiting prayer to trained staff only"], a:0},
+{q:"One Training Reflection question for Affirming Identity asks whether you understand who you are in Christ before doing what?", o:["Joining the team","Approaching God in prayer","Reading Scripture","Speaking to others"], a:1},
+{q:"The other Training Reflection question for Affirming Identity asks if you are open to practicing different what within the ministry?", o:["Leadership styles","Expressions of prayer","Scripture translations","Worship songs"], a:1},
+{q:"The phrase 'Pray without ceasing' comes from which book of the Bible, according to the manual?", o:["Philippians","Psalms","1 Thessalonians","Ephesians"], a:2},
+{q:"According to the manual, prayer is described as not accidental but instead what?", o:["Optional","Intentional","Occasional","Emotional"], a:1},
+{q:"Which of the following is one of the three areas the manual says we are called to be intentional in?", o:["Our Requests","Our Volume","Our Schedule","Our Wardrobe"], a:0},
+{q:"Which scripture reference is given for 'Our Requests' in the Becoming Intentional section?", o:["Psalm 55","Philippians 4:6","Philippians 4:4","1 Thessalonians 5:17"], a:1},
+{q:"Which scripture reference is given for 'Our Repentance'?", o:["Philippians 4:4","Philippians 4:6","Psalm 55","Psalm 63:1"], a:2},
+{q:"Which scripture reference is given for 'Our Rejoicing'?", o:["Philippians 4:4","Psalm 55","Romans 3:23","1 Thessalonians 5:17"], a:0},
+{q:"According to the manual, intentional prayer means we seek the will of God, not just what?", o:["Comfort","Outcomes","Approval","Attention"], a:1},
+{q:"Which of the following is listed as part of what intentional prayer means?", o:["We pray Scripture","We avoid silence","We only speak, never listen","We ignore obedience"], a:0},
+{q:"According to intentional prayer, we should listen as much as we do what?", o:["Sing","Speak","Read","Write"], a:1},
+{q:"According to the manual, intentional prayer means we respond in what?", o:["Obedience","Silence","Debate","Delay"], a:0},
+{q:"The manual states that God is never what in His response to prayer?", o:["Passive","Purposeful","Wise","Active"], a:0},
+{q:"According to the manual, even when God's answer unfolds over time, He remains purposeful, wise, and what?", o:["Silent","Distant","Active","Delayed"], a:2},
+{q:"Among the brief training notes in the Becoming Intentional section, what are prayer ministers told not to give?", o:["Resources","Advice","Encouragement","Scripture"], a:1},
+{q:"The training notes also instruct that prayer ministers should not speak in what way?", o:["Quietly","Negatively","Publicly","In tongues"], a:1},
+{q:"One Training Reflection question for Becoming Intentional simply asks: 'Is my prayer life ___?'", o:["Joyful","Public","Intentional","Long"], a:2},
+{q:"The line 'O God, You are my God; earnestly I seek You; my soul thirsts for You' is taken from which Psalm?", o:["Psalm 23","Psalm 51","Psalm 63","Psalm 119"], a:2},
+{q:"According to the manual, David's cry in Psalm 63 reveals something deeper than petition - what is it?", o:["Anger","Longing","Fear","Confusion"], a:1},
+{q:"Which of the following is listed as part of what 'Intimacy in prayer' is?", o:["Seeking God only for what He gives","Seeking God for who He is","Avoiding silence","Focusing only on requests"], a:1},
+{q:"According to the manual, intimacy in prayer involves sitting in God's presence without what?", o:["Words","Music","Agenda","Time limits"], a:2},
+{q:"The manual says intimacy in prayer allows what to 'become sacred'?", o:["Music","Silence","Movement","Repetition"], a:1},
+{q:"Intimacy in prayer is described as moving from information about God to what?", o:["Communion with God","Knowledge of doctrine","Performance for God","Service to God"], a:0},
+{q:"According to the manual, prayer too often becomes what, rather than relational?", o:["Transactional","Public","Silent","Scheduled"], a:0},
+{q:"Which of the following phrases is given as an example of transactional prayer?", o:["'God, You are enough.'","'God, fix this.'","'I delight in You.'","'I seek Your face.'"], a:1},
+{q:"According to the manual, the desired movement is from superficial to what?", o:["Supernatural","Spiritual","Special","Sincere"], a:0},
+{q:"The desired movement is also described as moving from routine to what (explicitly not described as a chore or a charity)?", o:["Obligation","Relationship","Ritual","Habit"], a:1},
+{q:"The desired movement is also described as moving from obligation to what?", o:["Routine","Performance","Obedience","Silence"], a:2},
+{q:"According to the manual, intimacy strengthens discernment, deepens trust, and produces what?", o:["Popularity","Spiritual maturity","Better attendance","Faster answers to prayer"], a:1},
+{q:"One Training Reflection question for Developing Intimacy asks: 'Do I hunger for God, or just His ___?'", o:["Help","Word","Presence","Power"], a:0},
+{q:"The other Training Reflection question for Developing Intimacy asks whether you are modeling intimacy for whom?", o:["Your family","Those you lead in prayer","Church staff","New believers only"], a:1},
+{q:"The manual offers a wordplay definition of intimacy as what?", o:["'Into me see'","'In, to, me'","'I'm with thee'","'Inward sea'"], a:0},
+{q:"According to the manual, character is described as the visible evidence of what?", o:["Inward transformation","Outward performance","Public reputation","Personal talent"], a:0},
+{q:"Character is said to reveal where a person has been, what God has done in them, and what else?", o:["How much they tithe","The direction they are choosing to go","Their spiritual gifting","Their leadership title"], a:1},
+{q:"According to the manual, character is not perfection - it is what?", o:["Trajectory","Talent","Tradition","Theology"], a:0},
+{q:"The manual states that gifting may open doors, but what sustains influence?", o:["Charisma","Character","Popularity","Experience"], a:1},
+{q:"Which of the following is listed as a reason character matters in prayer ministry?", o:["It protects the people we serve","It increases attendance","It guarantees financial support","It improves social media presence"], a:0},
+{q:"Besides protecting the people served, character is also said to protect the unity of the team, the integrity of the church, and what else?", o:["The budget of the ministry","The glory of God","The size of the team","The schedule of services"], a:1},
+{q:"According to the manual, which document allows applicants to share their story - who they are, where they've been, and where they sense God leading them?", o:["The Character Assessment (Appendix B)","The Prayer Application (Appendix A)","The Growth Track form","The CCB intake form"], a:1},
+{q:"According to the manual, what does the Interview Process allow both the applicant and leadership to clarify?", o:["Salary expectations","Growth areas, strengths, and expectations","Service schedules","Doctrinal disagreements"], a:1},
+{q:"According to the Humility section, what makes the difference in prayer ministry?", o:["Personality","The Spirit of the Lord working through you","Years of experience","Public speaking skill"], a:1},
+{q:"The manual states that prayer ministry is not powered by personality - it is empowered by what?", o:["Training","The Spirit","Leadership","Tradition"], a:1},
+{q:"According to Micah 6:8, as cited in the manual, what does the Lord require?", o:["To walk humbly with your God","To tithe faithfully","To fast weekly","To memorize Scripture"], a:0},
+{q:"According to Matthew 18:4, as cited in the manual, greatness in the Kingdom is measured by what?", o:["Wealth","Childlike humility","Years of service","Public influence"], a:1},
+{q:"Which passage is cited in the manual as the example of Jesus modeling servant leadership?", o:["Matthew 20:26, 28","Matthew 18:4","Micah 6:8","Philippians 2:1-11"], a:0},
+{q:"Philippians 2:1-11 is cited in the Humility section to show that Christ did what?", o:["Exalted Himself","Emptied Himself","Hid Himself","Defended Himself"], a:1},
+{q:"Which of the following is listed as a Humility evaluation question?", o:["Do you deflect praise toward God?","Do you enjoy public recognition?","Do you avoid correction?","Do you prefer working alone?"], a:0},
+{q:"Another Humility evaluation question asks whether you receive correction without what?", o:["Excuses","Defensiveness","Delay","Comment"], a:1},
+{q:"According to the Gentleness & Pursuit of God section, prayer ministers must be what before they are speakers?", o:["Leaders","Seekers","Teachers","Singers"], a:1},
+{q:"According to Hebrews 11:6, as cited in the manual, God rewards those who do what?", o:["Diligently seek Him","Serve the longest","Give the most","Speak the loudest"], a:0},
+{q:"According to 1 Peter 3:10-12, as cited, turning from evil and doing good invites what from the Lord?", o:["His judgment","His attentive care","His silence","His testing"], a:1},
+{q:"According to Psalm 1:1-2, as cited in the manual, who is blessed?", o:["Those who delight in the Word","Those who fast often","Those who serve in leadership","Those who give generously"], a:0},
+{q:"According to Psalm 119:165, as cited, what comes to those who love God's law?", o:["Wealth","Great peace","Recognition","Authority"], a:1},
+{q:"According to 2 Timothy 3:16-17, as cited in the manual, Scripture equips us for what?", o:["Every good work","Public ministry only","Leadership roles","Teaching others"], a:0},
+{q:"Which of the following is listed as a Gentleness & Pursuit of God evaluation question?", o:["Do you meditate on Scripture, or merely read it?","Do you read faster than others?","Do you prefer solitude?","Do you avoid public prayer?"], a:0},
+{q:"Another evaluation question in the Gentleness & Pursuit of God section asks whether your private devotion matches what?", o:["Your income","Your public ministry","Your schedule","Your personality"], a:1},
+{q:"According to the Gracious Speech section, words in prayer ministry can either heal or do what?", o:["Inspire","Harm","Convict","Encourage"], a:1},
+{q:"According to 2 Corinthians 1:12, as cited in the manual, dependence must be on God's grace, not on what?", o:["Human wisdom","Church tradition","Personal effort","Scripture alone"], a:0},
+{q:"According to 1 Peter 4:10, as cited, what are believers called to steward?", o:["God's resources","God's varied grace","The church budget","Their spiritual gifts only"], a:1},
+{q:"According to 2 Peter 3:18, as cited in the manual, growth in grace is described as what?", o:["Optional","Ongoing","Instant","Rare"], a:1},
+{q:"Which of the following is listed as a Gracious Speech evaluation question?", o:["Are your words seasoned with compassion?","Do you speak the most in group settings?","Are you the most articulate on the team?","Do you avoid speaking publicly?"], a:0},
+{q:"According to the Approachability & Ministry of Restoration section, prayer ministry should feel what?", o:["Formal","Safe","Exclusive","Quiet"], a:1},
+{q:"According to Matthew 5:47, as cited in the manual, even what matters?", o:["Greetings","Titles","Clothing","Posture"], a:0},
+{q:"According to 2 Corinthians 5:18-19, as cited, believers are given the ministry of what?", o:["Reconciliation","Judgment","Correction","Authority"], a:0},
+{q:"Which of the following is an Approachability evaluation question?", o:["Do people feel comfortable approaching you?","Are you the most popular team member?","Do you avoid difficult people?","Do you prefer formal settings?"], a:0},
+{q:"Another evaluation question in the Approachability section asks whether you pursue restoration over what?", o:["Comfort","Being right","Efficiency","Recognition"], a:1},
+{q:"According to the Trustworthiness & Confidentiality section, prayer ministry often involves what kind of disclosures?", o:["Public","Vulnerable","Written","Anonymous"], a:1},
+{q:"According to 1 Timothy 6:20, as cited in the manual, what are believers told to do with what has been entrusted to them?", o:["Share it widely","Guard it","Document it","Forget it"], a:1},
+{q:"Which of the following is a Trustworthiness & Confidentiality evaluation question?", o:["Do you protect confidential information?","Do you share prayer requests with friends?","Do you remember every detail of a conversation?","Do you prefer not to be told sensitive information?"], a:0},
+{q:"This section's evaluation questions also ask whether you know when information must be what?", o:["Recorded","Escalated appropriately","Ignored","Repeated"], a:1},
+{q:"According to the Dependability & Personal Responsibility section, spiritual maturity shows up in what?", o:["Public speaking ability","Everyday faithfulness","Theological knowledge","Years of attendance"], a:1},
+{q:"According to Matthew 5:33-37, as cited in the manual, what should your 'yes' be?", o:["Conditional","Delayed","Yes","Negotiable"], a:2},
+{q:"According to James 5:12, as cited, integrity eliminates the need for what?", o:["Apology","Exaggeration","Explanation","Correction"], a:1},
+{q:"Which of the following is a Dependability evaluation question?", o:["Do you arrive prepared and on time?","Do you prefer flexible commitments?","Do you avoid making promises?","Do you let others handle responsibilities?"], a:0},
+{q:"This section's evaluation questions also ask whether you live consistently where?", o:["Only at church","Inside and outside church","Only with family","Only online"], a:1},
+{q:"According to the Teachability section, who arrives fully formed in ministry?", o:["Everyone","Most leaders","No one","Only pastors"], a:2},
+{q:"According to John 6:45, as cited in the manual, who grows spiritually?", o:["Those who listen and learn from the Father","Those who serve the longest","Those who lead worship","Those who give the most"], a:0},
+{q:"According to John 8:28, as cited, what can teach us obedience?", o:["Scripture alone","Unexpected circumstances","Leadership training","Public failure"], a:1},
+{q:"Which of the following is a Teachability evaluation question?", o:["Do you receive feedback openly?","Do you avoid correction?","Do you prefer not to change?","Do you resist new information?"], a:0},
+{q:"According to the Flexibility & Submission to the Spirit section, ministry requires what kind of sensitivity?", o:["Emotional","Spiritual","Social","Theological"], a:1},
+{q:"According to Acts 8:26-40, as cited in the manual, who followed the Spirit's unexpected leading?", o:["Peter","Paul","Philip","Stephen"], a:2},
+{q:"According to Acts 17:28, as cited, in whom do we live and move?", o:["The Church","Him (God)","Community","Tradition"], a:1},
+{q:"According to 2 Peter 1:21, as cited in the manual, who moves and leads?", o:["Church leadership","The Spirit","Tradition","The congregation"], a:1},
+{q:"Which of the following is a Flexibility & Submission evaluation question?", o:["Are you rigid, or responsive to the Spirit?","Do you prefer a fixed routine?","Do you avoid spontaneous prayer?","Do you resist change?"], a:0},
+{q:"According to the Teamwork section, prayer ministry is never what kind of ministry?", o:["Public","Solo","Structured","Formal"], a:1},
+{q:"According to Romans 8:16-17, as cited in the manual, believers are described as what with Christ?", o:["Servants","Co-heirs","Strangers","Disciples"], a:1},
+{q:"According to Ephesians 3:5-6, as cited, believers share together under what?", o:["One leadership","Separate callings","Individual gifts","Competing visions"], a:0},
+{q:"Which of the following is a Teamwork evaluation question?", o:["Do you collaborate well?","Do you prefer to work alone?","Do you avoid group settings?","Do you compete with teammates?"], a:0},
+{q:"This section's evaluation questions also ask whether you celebrate what?", o:["Your own achievements","Others' strengths","Team attendance","Leadership decisions"], a:1},
+{q:"According to the manual, living above reproach does NOT mean what?", o:["Sinless perfection","Consistency","Integrity","Accountability"], a:0},
+{q:"According to the manual, living above reproach means living so that accusations do not easily take root because of what?", o:["A good legal defense","A consistent lifestyle reflecting Christ","Popularity","Strong leadership connections"], a:1},
+{q:"According to 1 Timothy 3:2, as cited in the manual, what must an overseer be?", o:["Charismatic","Above reproach","Highly educated","Well-known"], a:1},
+{q:"According to Titus 1:6-7, as cited, leadership requires what kind of conduct?", o:["Blameless","Charismatic","Public","Decisive"], a:0},
+{q:"According to 1 Peter 2:12, as cited in the manual, what should silence accusations?", o:["Legal action","Your good actions","Leadership defense","Public statements"], a:1},
+{q:"According to Philippians 2:15, as cited, believers are called to be blameless, pure, and what?", o:["Famous","Shining as lights in the world","Wealthy","Influential"], a:1},
+{q:"Which of the following is explicitly listed as an area affected by living above reproach?", o:["Financial integrity","Musical ability","Public speaking skill","Educational background"], a:0},
+{q:"Which of the following is also explicitly listed as an area affected by living above reproach?", o:["Digital conduct","Athletic ability","Wardrobe budget","Social media following"], a:0},
+{q:"According to the manual, living above reproach means there is consistency between who you are on Sunday and who you are on what day?", o:["Saturday","Monday","Friday","Wednesday"], a:1},
+{q:"Living above reproach also means you quickly confess and repent when what?", o:["Wrong","Tired","Busy","Criticized"], a:0},
+{q:"According to the manual, establishing wise boundaries is especially emphasized in what kind of ministry?", o:["Cross-gender ministry and confidential prayer moments","Children's ministry only","Worship ministry only","Online ministry only"], a:0},
+{q:"Which of the following is a 'Living Above Reproach' evaluation question?", o:["Would those closest to you affirm your integrity?","Are you the most experienced team member?","Do you prefer working alone?","Do you avoid accountability?"], a:0},
+{q:"Another evaluation question in the Living Above Reproach section asks whether you proactively avoid even the appearance of what?", o:["Weakness","Impropriety","Disagreement","Inexperience"], a:1},
+{q:"According to the manual, after reading the Living Above Reproach section, volunteers are asked to fill out what?", o:["The Prayer Application (Appendix A)","The Character Assessment (Appendix B)","The Growth Track form","The CCB intake form"], a:1},
+{q:"According to the manual, all volunteers must complete mandatory requirements when, relative to serving?", o:["After their first month of serving","Before serving","Only if requested","Within one year of serving"], a:1},
+{q:"According to the manual, the mandatory requirements exist for safety purposes and to align with what California law?", o:["Assembly Bill 506 (AB 506)","Senate Bill 1","Assembly Bill 100","Senate Bill 506"], a:0},
+{q:"What does Mandatory Reporter Training (MRT) help volunteers recognize?", o:["Signs of financial fraud","Signs of abuse","Signs of burnout","Signs of doctrinal error"], a:1},
+{q:"Besides recognizing signs of abuse, what does MRT help volunteers understand?", o:["Their legal obligation to report abuse to authorities","Their right to remain silent","Church disciplinary procedures","Insurance requirements"], a:0},
+{q:"Who must undergo a fingerprint-based background check (Live Scan) according to the manual?", o:["Only senior pastors","Administrators, employees, and 'regular volunteers'","Only those working with finances","Only new members"], a:1},
+{q:"Through which agency is the fingerprint-based background check conducted?", o:["The FBI","The California Department of Justice (DOJ)","The local police department","A private background check company"], a:1},
+{q:"What is the purpose of the background check, according to the manual?", o:["To verify employment history","To identify and exclude individuals with a history of child abuse and sexual abuse/assault","To check credit history","To confirm church membership"], a:1},
+{q:"According to the manual, is a completed background check transferable between different organizations?", o:["Yes, always","No, it is generally a one-time requirement per organization","Only within the same denomination","Only if requested in writing"], a:1},
+{q:"According to the manual, what can insurance carriers request before issuing or renewing general liability insurance?", o:["Proof of compliance with AB 506 requirements","A list of all volunteers' personal contacts","Financial statements","Attendance records"], a:0},
+{q:"According to the manual, what can result from failure to comply with these requirements if an allegation of abuse occurs?", o:["A warning letter","Significant legal liability and punitive damages","A temporary suspension only","No consequence"], a:1},
+{q:"According to the manual, Growth Track is described as the pathway to what?", o:["Spiritual formation and maturing in relationship with Jesus","Financial stewardship","Leadership certification","Worship training"], a:0},
+{q:"How many steps make up the Growth Track journey?", o:["Two","Three","Four","Five"], a:2},
+{q:"Which of the following is NOT listed as something Growth Track helps a person do?", o:["Knowing God","Finding community","Discovering your purpose","Memorizing Scripture"], a:3},
+{q:"According to the manual, Growth Track is also the first step for someone interested in what?", o:["Mission trips","Water baptism","Tithing","Leadership roles"], a:1},
+{q:"According to the manual, how many of the Growth Track steps must be completed before serving on the prayer team?", o:["One","Two","Three","All four"], a:3},
+{q:"After completing Growth Track and submitting the interest form, into what system is the form automatically placed?", o:["Church Community Builder (CCB)","A spreadsheet","An email inbox","A paper file"], a:0},
+{q:"According to the manual, within what timeframe should the interested person receive a call from the prayer leader (or designee) after completing Growth Track?", o:["Within 24 hours","Within a week","Within a month","Within a quarter"], a:1},
+{q:"According to the manual, every person interested in serving on the prayer team must fill out what?", o:["A reference letter","The application (Appendix A)","A background check waiver","A statement of faith"], a:1},
+{q:"What is one stated purpose of the application?", o:["To collect donations","To obtain information about the person's history serving in ministry","To schedule services","To assign a mentor"], a:1},
+{q:"The application also serves as a first level of screening to see if the prayer ministry is a good fit according to what?", o:["Availability and age","Spiritual gifts and character","Education and income","Denomination and location"], a:1},
+{q:"According to the manual, what happens once the application has been submitted?", o:["The person is automatically approved","An interview must be scheduled with prayer team leadership","The person begins serving immediately","The person is placed on a waiting list indefinitely"], a:1},
+{q:"What is the interview described as an opportunity to do?", o:["Test the applicant's Bible knowledge","Get to know the individual on a more personal level","Assign a permanent role","Review financial giving"], a:1},
+{q:"If it is determined a person is a good fit after the interview, what happens next?", o:["They are welcomed to the team and begin the on-boarding process","They are placed on a waiting list","They retake the application","They are referred to another church"], a:0},
+{q:"If it is determined a person is NOT a good fit, how are they informed, according to the manual?", o:["They are not informed at all","By an email or a phone call","Only in person at church","Through a public announcement"], a:1},
+{q:"If someone is not a good fit for the prayer team, who helps them find another ministry to serve in?", o:["The senior pastor","The Growth Track Network Lead (or designee)","The security team","The worship director"], a:1},
+{q:"Once a person is determined to be a good fit and all steps are completed, what process do they begin?", o:["A formal exam","A shadowing process to learn procedures","An immediate solo assignment","A probationary fasting period"], a:1},
+{q:"Which of the following is listed as a way prayer requests can be submitted?", o:["Phone calls/messages","Carrier pigeon","Bulletin board posting","Social media direct message only"], a:0},
+{q:"According to the manual, what is the email address for submitting prayer requests?", o:["info@thebay.church","prayer@thebay.church","requests@thebay.church","help@thebay.church"], a:1},
+{q:"According to the manual, what word should be texted to submit a prayer request, and to what number?", o:["'Pray' to 925.892.3670","'Prayer' to 925.892.3670","'Help' to 925.892.3670","'Request' to 925.892.3670"], a:1},
+{q:"Which organization is listed alongside phone, email, website, app, text, and cards as a way prayer requests come in?", o:["Assemblies of God World Missions","The Red Cross","The American Bible Society","Local City Hall"], a:0},
+{q:"According to the manual, what should a prayer team member be attentive to regarding incoming requests?", o:["Whether the request requires a response","Whether the request is too long","Whether the request is anonymous","Whether the request came by phone or email"], a:0},
+{q:"Which of the following scriptures is listed among the guidelines to prepare for responding to prayer requests?", o:["Ephesians 6:10-20","Genesis 1:1","Revelation 21:1","Exodus 20:1"], a:0},
+{q:"According to the manual, as a person serving on the prayer team, you are described as the representation of whom for the person you are praying with?", o:["The pastor","Jesus","The church staff","The denomination"], a:1},
+{q:"According to the manual, what should you monitor before responding to prayer requests?", o:["What you take in through your eye gate and ear gate","Your schedule and availability","Your tone of voice only","Your physical posture"], a:0},
+{q:"According to the manual, why does the enemy hate that believers are praying?", o:["Because prayer increases hope","Because prayer is loud","Because prayer takes time","Because prayer is public"], a:0},
+{q:"According to the manual, how should a prayer team member prepare to respond to a request?", o:["Pray and prepare as if it were you on the other end","Prepare a generic script only","Avoid emotional engagement","Research the person's background first"], a:0},
+{q:"In the guided script for responding to prayer requests, how does the prayer team member introduce themselves?", o:["'Hi, this is the church calling.'","'Hello, my name is ___ and I serve on the prayer team at the Bay Church.'","'Good morning, this is your prayer reminder.'","'Hello, I'm calling on behalf of the pastor.'"], a:1},
+{q:"If the person says it is not a good time to pray, what should the prayer team member do, according to the script guidance?", o:["End the call without further conversation","Ask if there is another time that would work better","Insist on praying anyway","Pray silently without telling them"], a:1},
+{q:"According to the manual, when praying over a request, the focus should be on what?", o:["Whatever topic the team member chooses","The need on the actual request form","The longest possible prayer","Multiple unrelated topics"], a:1},
+{q:"If asked to pray for additional things beyond the original request, what should the team member do?", o:["Honor the additional request","Refuse and stick only to the form","Ask if there is anything else, every time","End the call early"], a:0},
+{q:"According to the manual, should a prayer team member proactively ask if there are other things they could pray for?", o:["Yes, always","No, in order to respect time and keep the experience from feeling intrusive","Only on weekends","Only for new members"], a:1},
+{q:"Based on the need listed in the request, what should be provided when necessary?", o:["Resources and/or referrals","A financial gift","A follow-up survey","A printed Bible"], a:0},
+{q:"According to the manual, intercessory prayer is described as 'standing in the ___' while praying for others.", o:["Light","Gap","Storm","Crowd"], a:1},
+{q:"According to the manual, intercession includes holding a spiritual burden for what kinds of groups?", o:["Cities, states, and nations","Only individuals","Only church staff","Only family members"], a:0},
+{q:"According to the manual, intercessory prayer is praying until what is released and fulfilled?", o:["A personal request","God's plan for His kingdom","A church budget goal","A leadership decision"], a:1},
+{q:"According to the manual, intercession is also defined as intervention between two parties to do what?", o:["Reconcile differences","Negotiate finances","Resolve a dispute legally","Plan an event"], a:0},
+{q:"According to the manual, who can be an intercessor?", o:["Only ordained pastors","Anyone on the prayer team","Only those with the gift of prophecy","Only senior leadership"], a:1},
+{q:"According to the manual, intercession is described as everyone's ministry, just like which two other ministries?", o:["Worshiping and witnessing","Teaching and giving","Leading and serving","Singing and ushering"], a:0},
+{q:"According to the manual, what is the first listed way 'we intercede'?", o:["Be intentional in making time for prayer","Pray only during services","Pray only in groups","Pray only when asked"], a:0},
+{q:"According to John 10:27, cited in the manual, what should intercessors listen for?", o:["The voice of God","Worship music","Other people's prayers","Church announcements"], a:0},
+{q:"According to the manual (citing Joy Dawson's 'Forever Ruined for the Ordinary'), through what four things does God speak?", o:["His Word, what we SEE, our HEARING, and IMPRESSIONS to our spirit","Dreams, visions, angels, and signs","Scripture, sermons, songs, and silence","Leaders, books, nature, and prayer"], a:0},
+{q:"According to the manual, as the Lord impresses things on an intercessor, how should they pray those things?", o:["Silently","Verbally","In writing only","Only after the service"], a:1},
+{q:"Which of the following is listed as a way to intercede, alongside fasting, joy, and declaration?", o:["Shouting","Whispering only","Singing only","Reading only"], a:0},
+{q:"According to the manual, when should intercession take place?", o:["Only on Sundays","Anytime","Only during scheduled events","Only during emergencies"], a:1},
+{q:"Which of the following is listed as one of the prayer team's assigned times/moments for intercession?", o:["Sunday morning walk through before services","Staff meetings","Choir rehearsal","Building maintenance days"], a:0},
+{q:"Which of the following is also listed as an assigned time for intercession?", o:["Praying over anointing oils","Setting up chairs","Cleaning the building","Counting the offering"], a:0},
+{q:"Which of the following events is listed as an assigned time for intercession?", o:["Funerals/Memorials","Staff birthdays","Building tours","Vendor meetings"], a:0},
+{q:"According to the manual, which Old Testament figure is given as a biblical example of an intercessor, with the reference Genesis 20:7?", o:["Abraham","Moses","David","Elijah"], a:0},
+{q:"Which biblical figure is cited as an intercessor with the reference 1 Samuel 7:8?", o:["Saul","Samuel","Samson","Solomon"], a:1},
+{q:"Which biblical figure is cited as an intercessor with the reference Ezra 6:9-10?", o:["Nehemiah","Ezra","Daniel","Esther"], a:1},
+{q:"According to the manual, which references are given to show Jesus as an intercessor?", o:["Luke 6:12, Romans 8:34, Hebrews 8:1","Matthew 5:1-12","John 3:16","Genesis 1:1"], a:0},
+{q:"According to Romans 8:26-27, cited in the manual, who 'makes intercession for us with groanings that cannot be uttered'?", o:["The Church","The Holy Spirit","Angels","The prophets"], a:1},
+{q:"According to the manual, how far in advance of the first service should volunteers arrive for the Pre-Service Intercession Walk Through?", o:["15 minutes","30 minutes","One hour","Two hours"], a:2},
+{q:"According to the manual, ministry time at the altar is explicitly NOT what?", o:["A worship moment","A counseling session","A time for prayer","A public event"], a:1},
+{q:"According to the manual, prayer ministers should not give advice or counsel, but instead should do what?", o:["Refer the person to a pastor immediately","Simply remind the recipient of the promises of God","End the prayer time quickly","Ask probing personal questions"], a:1},
+{q:"According to the manual, a prayer minister should remain as neutral as possible and avoid doing what regarding a recipient's situation?", o:["Praying for them","Agreeing or disagreeing about it","Listening to them","Asking their name"], a:1},
+{q:"According to the manual, what is the stated goal of altar ministry, rather than receiving the minister's advice?", o:["A supernatural encounter with God","A longer prayer time","A referral to counseling","A scheduled follow-up"], a:0},
+{q:"According to the example greeting in 'Getting Started,' what two things should a prayer minister ask a recipient?", o:["Their name and how the minister can pray for them","Their age and their church background","Their phone number and email","Their denomination and home address"], a:0},
+{q:"After learning a recipient's name, how should the prayer minister refer to them, if possible?", o:["By their name","By 'sir' or 'ma'am' only","By 'friend' only","Not at all, to maintain neutrality"], a:0},
+{q:"According to the manual, the altar ministry etiquette guidelines apply to which settings?", o:["Only Sunday morning services","Sunday services, worship and prayer nights, special events, and more","Only special events","Only after-service prayer"], a:1},
+{q:"According to the manual, for special events involving all Bay Church campuses, who supports and ministers to the congregation?", o:["Only the host campus team","All prayer teams","Only senior leadership","Volunteers from other churches"], a:1},
+{q:"During the altar call, what does the manual say prayer team members should be?", o:["Prompt to move when instructed","Slow and deliberate","Vocal and visible","Seated until called individually"], a:0},
+{q:"According to the manual, what should prayer team members wear for proper identification during every service?", o:["A name tag only","Their serving badge","Matching team shirts","Formal attire"], a:1},
+{q:"According to the manual, since altar ministry is in full view of the congregation, what kind of apparel should prayer team members wear?", o:["Modest, neat apparel","Bright, attention-getting apparel","Formal business attire only","Any casual clothing"], a:0},
+{q:"According to the manual, appropriate touch can be reassuring to some people but may be offensive, triggering, or cause fear for whom?", o:["Children","Abuse victims","New believers","Visitors"], a:1},
+{q:"According to the manual, what should a prayer team member never do, or even give the appearance of doing, to a recipient?", o:["Pushing them","Touching their hand","Praying loudly","Standing close to them"], a:0},
+{q:"According to the manual, what is 'essential' regarding how loudly a prayer minister should speak?", o:["Volume control","Singing along with worship","Repetition","Using a microphone"], a:0},
+{q:"If the music is too loud during altar ministry, what does the manual instruct a prayer minister to do?", o:["Yell to be heard","Lean into the recipient's ear and speak at a normal level","Stop praying until the music ends","Use hand signals instead"], a:1},
+{q:"According to the manual, prayer team members should stay completely focused on what?", o:["The worship band","The person they are ministering to","The clock","The congregation as a whole"], a:1},
+{q:"According to the manual, prayer team members are asked to refrain from praying in what during altar ministry?", o:["A loud voice","Tongues","Scripture","Silence"], a:1},
+{q:"Which scripture is cited regarding the practice of refraining from praying in tongues at the altar?", o:["1 Corinthians 14:2, 4, and 28","Romans 8:26-27","Acts 2:4","1 Thessalonians 5:19"], a:0},
+{q:"According to the manual, why should prayer team members keep their eyes open while praying for a recipient?", o:["To read the recipient's prayer card","To see what is happening around them and notice the Holy Spirit's movement","To make eye contact at all times","To avoid falling asleep"], a:1},
+{q:"According to the manual, why is it important to watch for spacing at the altar?", o:["To allow more people to come forward at once","To communicate with and hear your recipient and maintain confidentiality","To make room for musicians","To follow fire code requirements"], a:1},
+{q:"According to the manual, how should a prayer team member's body remain while praying at the altar?", o:["Calm and still","Animated and expressive","Kneeling at all times","Facing the congregation"], a:0},
+{q:"According to the manual, oil is viewed as a tangible sign of what?", o:["The Holy Spirit's presence, empowerment, and favor","Financial blessing","Healing only","Church tradition"], a:0},
+{q:"According to the manual, believers may anoint their homes, doors, or themselves to symbolically claim what?", o:["Divine protection against evil forces or spiritual resistance","Financial prosperity","Healing from illness","Church membership"], a:0},
+{q:"According to the manual, biblical texts often associate oil with 'the oil of gladness,' symbolizing prosperity, stability, and what?", o:["Divine approval","Physical strength","Wealth accumulation","Public recognition"], a:0},
+{q:"According to the manual, what should always be done before anointing someone with oil?", o:["Pray silently first","Ask permission","Consult a pastor","Wait until after the service"], a:1},
+{q:"According to the manual, since many people have never experienced anointing with oil, what may a prayer minister need to do?", o:["Avoid using oil altogether","Explain its purpose","Use a substitute symbol","Ask someone else to explain it later"], a:1},
+{q:"According to the manual, when might there not be time to explain the purpose of anointing oil?", o:["During after-service prayer","During altar prayer ministry","During the Pre-Service Walk Through","During the interview process"], a:1},
+{q:"According to the manual, when does After Service Prayer take place?", o:["Before the service begins","After the service is over","During the sermon","During worship"], a:1},
+{q:"Besides responding to prayer needs, what other purpose does After Service Prayer serve?", o:["Taking attendance","Allowing people to respond to a Salvation call and receive care and direction","Collecting the offering","Distributing communion"], a:1},
+{q:"According to the manual, when should all prayer team members be at the designated prayer area?", o:["Just before the benediction/dismissal","Immediately after the sermon begins","At the start of worship","Only when called by name"], a:0},
+{q:"According to the manual, what etiquette guidelines should be implemented during After Service Prayer?", o:["New guidelines specific to this time","The same etiquette guidelines from the Altar Prayer Ministry section","No specific guidelines","Guidelines set by each individual minister"], a:1},
+{q:"According to the manual, in case of emergencies during After Service Prayer, who should always be nearby?", o:["A pastor","Someone from the security/safety team","A medical professional","Church administration"], a:1},
+{q:"According to the manual, what should prayer team members have ready in case people need to be connected to further support?", o:["Financial assistance forms","Materials, information, and resources","A list of staff phone numbers","A printed church directory"], a:1}
+];
+// ---------- App State ----------
+var sessionQuestions = [];
+var currentIndex = 0;
+var correctCount = 0;
+var answeredCurrent = false;
+var currentCorrectIndexShuffled = -1;
+
+// ---------- Helpers ----------
+function shuffleArray(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
+
+function updateScoreCorner() {
+  document.getElementById("score-display").textContent =
+    correctCount + " / " + currentIndex + (currentIndex < sessionQuestions.length ? "" : "");
+}
+
+function updateProgress() {
+  var total = sessionQuestions.length;
+  var doneCount = currentIndex; // questions fully completed so far
+  var pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("question-counter").textContent =
+    "Question " + Math.min(currentIndex + 1, total) + " of " + total;
+}
+
+// ---------- Quiz Flow ----------
+function startQuiz() {
+  var countChoice = document.getElementById("question-count-select").value;
+  var shuffledAll = shuffleArray(QUESTIONS);
+  if (countChoice === "all") {
+    sessionQuestions = shuffledAll;
+  } else {
+    var n = parseInt(countChoice, 10);
+    sessionQuestions = shuffledAll.slice(0, Math.min(n, shuffledAll.length));
+  }
+  currentIndex = 0;
+  correctCount = 0;
+  document.getElementById("start-panel").style.display = "none";
+  document.getElementById("end-panel").style.display = "none";
+  document.getElementById("quiz-panel").style.display = "block";
+  updateScoreCorner();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answeredCurrent = false;
+  var item = sessionQuestions[currentIndex];
+
+  // Shuffle the options for this question, tracking the correct answer text
+  var correctText = item.o[item.a];
+  var optionOrder = shuffleArray(item.o.map(function(text, idx) { return { text: text, isCorrect: idx === item.a }; }));
+
+  document.getElementById("question-text").textContent = item.q;
+
+  var optionsArea = document.getElementById("options-area");
+  optionsArea.innerHTML = "";
+
+  optionOrder.forEach(function(opt, idx) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn btn-default option-btn";
+    btn.textContent = opt.text;
+    btn.setAttribute("data-correct", opt.isCorrect ? "true" : "false");
+    btn.addEventListener("click", function() {
+      handleAnswer(btn, opt.isCorrect, correctText);
+    });
+    optionsArea.appendChild(btn);
+  });
+
+  document.getElementById("feedback-box").style.display = "none";
+  document.getElementById("feedback-box").className = "alert";
+  document.getElementById("next-btn-wrap").style.display = "none";
+
+  updateProgress();
+}
+
+function handleAnswer(clickedBtn, isCorrect, correctText) {
+  if (answeredCurrent) { return; }
+  answeredCurrent = true;
+
+  var allBtns = document.getElementById("options-area").querySelectorAll(".option-btn");
+  allBtns.forEach(function(b) {
+    b.disabled = true;
+    b.classList.add("disabled-look");
+    if (b.getAttribute("data-correct") === "true") {
+      b.classList.add("btn-success");
+    }
+  });
+
+  if (!isCorrect) {
+    clickedBtn.classList.add("btn-danger");
+  }
+
+  var feedbackBox = document.getElementById("feedback-box");
+  if (isCorrect) {
+    correctCount++;
+    feedbackBox.className = "alert alert-success";
+    feedbackBox.innerHTML = "<strong>Correct!</strong> That's true to the manual.";
+  } else {
+    feedbackBox.className = "alert alert-danger";
+    feedbackBox.innerHTML = "<strong>Incorrect.</strong> The correct answer is: " + correctText;
+  }
+  feedbackBox.style.display = "block";
+
+  currentIndex++; // count this question as completed for scoring/progress purposes
+  updateScoreCorner();
+  updateProgress();
+
+  document.getElementById("next-btn-wrap").style.display = "block";
+}
+
+function goToNext() {
+  if (currentIndex >= sessionQuestions.length) {
+    showEndScreen();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showEndScreen() {
+  document.getElementById("quiz-panel").style.display = "none";
+  document.getElementById("end-panel").style.display = "block";
+
+  var total = sessionQuestions.length;
+  var pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  document.getElementById("final-score-text").textContent = correctCount + " / " + total + " (" + pct + "%)";
+
+  var msg;
+  if (pct === 100) {
+    msg = "Perfect score! You know this manual inside and out.";
+  } else if (pct >= 90) {
+    msg = "Excellent work — you have a strong grasp of the manual.";
+  } else if (pct >= 75) {
+    msg = "Good job! A bit more review and you'll have it down cold.";
+  } else if (pct >= 50) {
+    msg = "You're getting there — consider reviewing the manual again.";
+  } else {
+    msg = "It may help to go back through the manual and try again.";
+  }
+  document.getElementById("final-message").textContent = msg;
+}
+
+function resetToStart() {
+  document.getElementById("end-panel").style.display = "none";
+  document.getElementById("quiz-panel").style.display = "none";
+  document.getElementById("start-panel").style.display = "block";
+  correctCount = 0;
+  currentIndex = 0;
+  document.getElementById("score-display").textContent = "0 / 0";
+}
+
+// ---------- Event Wiring ----------
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("next-btn").addEventListener("click", goToNext);
+document.getElementById("restart-btn").addEventListener("click", resetToStart);
+</script>
+</body>
+</html>
